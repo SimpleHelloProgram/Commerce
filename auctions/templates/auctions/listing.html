@@ -1,0 +1,99 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+<div class = "container">
+    {%if message%}
+        {%if update == True%}
+            <div class="alert alert-success" role="alert">
+                {{message}}
+            </div>
+        {%else%}
+            <div class="alert alert-danger" role="alert">
+                {{message}}
+            </div>
+        {%endif%}
+
+    {%endif%}
+</div>
+
+{%if not listing.isActive and user == listing.price.user%}
+    <div class="alert alert-success" role="alert">
+        You have on the auction
+    </div>
+{%endif%}
+
+<h1>Listings: {{listing.title}}</h2>
+<br/>
+<div class = "row mx-3">
+    {%if user.is_authenticated%}
+       
+        {%if isListingInWatchList%}
+            <form action = "{%url 'removeWatchList' id=listing.id%}" method = 'POST'> 
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">Remove from watchlist</button>
+            </form>
+        {%else%}
+        <form action = "{%url 'addWatchList' id=listing.id%}" method = 'POST'> 
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-success">Add to watchlist</button>
+        </form>
+        {%endif%}
+        {%if isOwner and listing.isActive%}
+            <div class = "container">
+                <form action = "{%url 'closeAuction' id=listing.id%}" method = 'POST'> 
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">Close Listing</button>
+                </form>
+            </div>
+        {%endif%}
+    {%endif%}
+</div>
+
+<br/>
+<br/>
+
+<img src="{{listing.img_url}}" alt="{{listing.title}}" height = 400px >
+<br/>
+<br/>
+<p> {{listing.description}}</p>
+<p> Owner: {{listing.owner}} </p>
+<h4>Current Bid - ${{listing.price.bid}}</h4>
+<br/>
+
+{%if user.is_authenticated%}
+<div>
+    <form action = "{%url 'add_bid' id=listing.id%}" method = "POST" class="form-inline">
+        {% csrf_token %}
+        <div class="form-group mb-2">
+            <label for="bidAmount" class="sr-only">Bid Amount</label>
+            <input type="number" min = "0" class="form-control" id="bidAmount" placeholder="Enter bid amount" name = "new-Bid">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2 ml-2">Submit Bid</button>
+    </form>
+</div>
+{%endif%}
+
+
+
+<br/>
+<br/>
+
+<h2>Comments</h2>
+{%if user.is_authenticated%}
+    <form action = "{%url 'add_comment' id=listing.id%}" method = 'POST'> 
+        {%csrf_token%}
+        <div class="input-group mb-3">
+            <input type="text" name = "comment" class="form-control" placeholder="Add Comment" aria-label="Add Comment" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Submit</button>
+            </div>
+        </div>
+    </form>
+{%endif%} 
+<ul class="list-group">
+    {%for comment in comments%}
+            <li class="list-group-item">{{comment.comment}} -- commented by <strong> {{comment.owner}} </strong> </li>
+    {%endfor%}
+</ul>
+{% endblock %}
